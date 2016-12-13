@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
@@ -6,11 +6,10 @@
 
 #include "sqlite3.h"
 
-void getNowTime(char *);
-
 void main() {
-	char name[64], *errMessage = NULL, nowTime[20];
+	char name[20], *errMessage = NULL;
 	int digit, answer, input, count = 0, i;
+	clock_t start, end;
 	sqlite3 *db;
 	sqlite3_stmt *stmt = NULL;
 
@@ -22,7 +21,7 @@ void main() {
 
 	// ②必要な情報の入力
 	printf("名前を入力してください: ");
-	scanf_s("%s", &name, 64);
+	scanf_s("%s", &name, 20);
 	printf("桁数を決めてください: ");
 	scanf_s("%d", &digit);
 	digit = (int)pow(10, digit);
@@ -33,6 +32,7 @@ void main() {
 	printf("Result: %d\n", answer);
 
 	// ④数の入力
+	start = clock();
 	while (1) {
 		printf("数を当てて下さい: ");
 		scanf_s("%d", &input);
@@ -40,49 +40,40 @@ void main() {
 		if (input == answer) break;
 
 		// ⑤ヒントの表示
-		input = abs(answer - input);
-		if (input >= (answer / 2)) {
-			printf("まったくの当て外れで～す\n");
-		}
-		else {
-			if (rand() % 2 == 0) {
-				digit = (int)log10((double)input) + 1;
-				printf("%d桁以上(%1.f)位差があります\n", digit, floor(input / pow(10, digit - 1) + 0.5) * pow(10, digit - 1));
-			}
-			else {
-				printf("ちなみに%sなんですよ～\n", (answer % 2 == 0) ? "偶数" : "奇数");
-			}
-		}
 	}
 
 	// ⑥成績表示
+	end = clock();
 	printf("%sさんは%d回で当てました！\n", name, count);
+	printf("経過時間%d[ms]\n", end - start);
 
 	// ⑦ 作者表示
 	printf("created by syuchan\n");
 
-	// 拡張１
-	getNowTime(nowTime);
-	if (sqlite3_open("data.sqlite", &db) != SQLITE_OK) {
+	// 拡張
+	if (sqlite3_open("data.sqlite3", &db) != SQLITE_OK) {
 		printf("SQLiteファイルの読み込みに失敗しました");
 	}
 	else {
-		if (sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS history(id INTEGER PRIMARY KEY AUTOINCREMENT,clearTime TEXT NOT NULL,name TEXT NOT NULL,count INTEGER NOT NULL)", NULL, NULL, &errMessage) != SQLITE_OK) {
+		// 拡張１
+		if (sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS history(id INTEGER PRIMARY KEY AUTOINCREMENT,clearTime INTEGER NOT NULL,name TEXT NOT NULL,count INTEGER NOT NULL)", NULL, NULL, &errMessage) != SQLITE_OK) {
 			printf("%s\n", errMessage);
 			sqlite3_free(errMessage);
 			errMessage = NULL;
 		}
 		if (sqlite3_prepare_v2(db, "INSERT INTO history(clearTime,name,count) VALUES (?,?,?)", 128, &stmt, NULL) == SQLITE_OK) {
-			sqlite3_bind_text(stmt, 1, nowTime, strlen(nowTime), SQLITE_TRANSIENT);
+			sqlite3_bind_int(stmt, 1, end - start);
 			sqlite3_bind_text(stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
 			sqlite3_bind_int(stmt, 3, count);
 			while (SQLITE_DONE != sqlite3_step(stmt)) {}
 		}
 		sqlite3_finalize(stmt);
-		printf("-----RANKING-----\n");
-		if (sqlite3_prepare_v2(db, "SELECT * FROM history ORDER BY count ASC LIMIT 5", 128, &stmt, NULL) == SQLITE_OK) {
+		// 拡張２
+		printf("------------------------------RANKING-------------------------------\n");
+		printf("%2s:\t%20s\t%8s\t%s\n", "順位", "名前", "当てるまでの回数", "経過時間[ms]");
+		if (sqlite3_prepare_v2(db, "SELECT * FROM history ORDER BY count ASC LIMIT 3", 128, &stmt, NULL) == SQLITE_OK) {
 			for (i = 1; sqlite3_step(stmt) == SQLITE_ROW; i++) {
-				printf("%d: %s %d (%s)\n", i, (char *)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), (char *)sqlite3_column_text(stmt, 1));
+				printf("%4d:\t%20s\t%16d\t%12d\n", i, (char *)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), sqlite3_column_int(stmt, 1));
 			}
 		}
 		sqlite3_finalize(stmt);
@@ -90,11 +81,22 @@ void main() {
 			printf("SQLiteファイルの終了に失敗しました");
 		}
 	}
-	system("PAUSE");
+	// system("PAUSE");
 }
 
-void getNowTime(char *str) {
-	time_t now = time(NULL);
-	struct tm *pnow = localtime(&now);
-	sprintf(str, "%04d/%02d/%02d %02d:%02d:%02d", pnow->tm_year + 1900, pnow->tm_mon + 1, pnow->tm_mday, pnow->tm_hour, pnow->tm_min, pnow->tm_sec);
+void print_hint(int answer, int input) {
+	int digit, diff;
+	diff = abs(answer - input);
+	if (diff >= (answer / 2)) {
+		printf("まったくの当て外れで～す\n");
+	}
+	else {
+		if (rand() % 2 == 0) {
+			digit = (int)log10((double)diff) + 1;
+			printf("%d桁以上(%1.f)位差があります\n", digit, floor(diff / pow(10, digit - 1) + 0.5) * pow(10, digit - 1));
+		}
+		else {
+			printf("ちなみに%sなんですよ～\n", (answer % 2 == 0) ? "偶数" : "奇数");
+		}
+	}
 }
