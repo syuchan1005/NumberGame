@@ -148,12 +148,20 @@ void print_hint(int answer, int input) {
 		printf("まったくの当て外れで～す\n");
 	}
 	else {
-		if (rand() % 2 == 0) {
+		switch (rand() % 5) {
+		case 0:
 			digit = get_digit(diff);
 			printf("%d桁以上(%1.f)位差があります\n", digit, floor(diff / pow(10, digit - 1) + 0.5) * pow(10, digit - 1)); // 最上位桁 * 10^桁数
-		}
-		else {
-			printf("ちなみに%sなんですよ～\n", (answer % 2 == 0) ? "偶数" : "奇数");
+			break;
+		case 1:
+			printf("ちなみに%sなんですよ～\n", (answer % 2) ? "偶数" : "奇数");
+			break;
+		case 2:
+			printf("もう少し%sかなぁ", ((answer - input) < 0) ? "小さい" : "大きい");
+			break;
+		default: 
+			printf("ヒントなんてない！");
+			break;
 		}
 	}
 }
