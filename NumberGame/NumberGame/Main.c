@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
@@ -31,6 +31,7 @@ void main() {
 	while (1) {
 		printf("選択してください\n\t1.数あてゲームで遊ぶ\n\t2.ランキングを見る\n\t3.このソフトウェアについて\n\t他.終了\n> ");
 		scanf("%d", &input);
+		printf("\n");
 		switch (input) {
 		case 1:
 			number_game();
@@ -38,11 +39,11 @@ void main() {
 		case 2:
 			printf("ソートしたいものを選んでください\n\t1.当てるまでの回数\n\t2.経過時間\n\t3.桁数\n\t他.終了\n> ");
 			scanf("%d", &sort_column);
-			if (!(sort_column < 1 && sort_column > 3)) {
+			if (!(sort_column < 1 || sort_column > 3)) {
 				sort_column -= 1;
 				printf("どちらにしますか?\n\t1.昇順\n\t2.降順\n\t他.終了\n> ");
 				scanf("%d", &sort_type);
-				if (!(sort_type < 1 && sort_type > 2)) {
+				if (!(sort_type < 1 || sort_type > 2)) {
 					sort_type -= 1;
 					printf("何人分表示しますか?\n> ");
 					scanf("%d", &limit);
@@ -56,6 +57,7 @@ void main() {
 			printf("ソースコード: https://github.com/syuchan1005/NumberGame \n");
 			break;
 		}
+		printf("\n");
 		if (input < 1 || input > 3) {
 			printf("created by syuchan\n\n");
 			system("PAUSE");
