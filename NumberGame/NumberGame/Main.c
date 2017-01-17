@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
@@ -14,7 +14,7 @@ int input_digit();
 void print_hint(int, int);
 void create_table();
 void save_ranking(int, char*, int, int);
-void print_ranking();
+void print_ranking(char*, char*, int);
 
 sqlite3 *db;
 int game_level;
@@ -29,7 +29,7 @@ void main() {
 	}
 
 	while (1) {
-		printf("選択してください\n\t1.数あてゲームで遊ぶ\n\t2.ランキングを見る\n\t他.終了\n> ");
+		printf("選択してください\n\t1.数あてゲームで遊ぶ\n\t2.ランキングを見る\n\t3.このソフトウェアについて\n\t他.終了\n> ");
 		scanf("%d", &input);
 		switch (input) {
 		case 1:
@@ -50,8 +50,13 @@ void main() {
 				}
 			}
 			break;
+		case 3:
+			printf("このソフトウェアについて\n");
+			printf("このソフトウェアはMITLicenseで配布されています\n");
+			printf("ソースコード: https://github.com/syuchan1005/NumberGame \n");
+			break;
 		}
-		if (input < 1 || input > 2) {
+		if (input < 1 || input > 3) {
 			printf("created by syuchan\n\n");
 			system("PAUSE");
 			break;
