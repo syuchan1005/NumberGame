@@ -17,6 +17,7 @@ void save_ranking(int, char*, int, int);
 void print_ranking();
 
 sqlite3 *db;
+int game_level;
 
 void main() {
 	int input, sort_column, sort_type, limit;
@@ -37,11 +38,11 @@ void main() {
 		case 2:
 			printf("ソートしたいものを選んでください\n\t1.当てるまでの回数\n\t2.経過時間\n\t3.桁数\n\t他.終了\n> ");
 			scanf("%d", &sort_column);
-			if (!(sort_column < 1 || sort_column > 3)) {
+			if (!(sort_column < 1 && sort_column > 3)) {
 				sort_column -= 1;
 				printf("どちらにしますか?\n\t1.昇順\n\t2.降順\n\t他.終了\n> ");
 				scanf("%d", &sort_type);
-				if (!(sort_type < 1 || sort_type > 2)) {
+				if (!(sort_type < 1 && sort_type > 2)) {
 					sort_type -= 1;
 					printf("何人分表示しますか?\n> ");
 					scanf("%d", &limit);
@@ -120,6 +121,7 @@ int input_digit() {
 	int digit, type;
 	printf("Levelを選択して下さい\n\t1.初級\n\t2.中級\n\t3.上級\n\t他.桁入力\n> ");
 	scanf("%d", &type);
+	game_level = type;
 	switch (type) {
 	case 1:
 		digit = rand() % 2 + 1;
@@ -159,6 +161,11 @@ void print_hint(int answer, int input) {
 		case 2:
 			printf("もう少し%sかなぁ", ((answer - input) < 0) ? "小さい" : "大きい");
 			break;
+		case 3:
+			if (game_level < 0 && game_level > 3) {
+				printf("桁数は%dぐらい...?", game_level);
+			}
+			break;
 		default: 
 			printf("ヒントなんてない！");
 			break;
@@ -168,7 +175,7 @@ void print_hint(int answer, int input) {
 
 void create_table() {
 	char* errMessage = NULL;
-	if (sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS history(id INTEGER PRIMARY KEY AUTOINCREMENT,clearTime INTEGER NOT NULL,name TEXT NOT NULL,count INTEGER NOT NULL, digit INTEGER NOT NULL)"
+	if (sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS history(id INTEGER PRIMARY KEY AUTOINCREMENT,clearTime INTEGER NOT NULL,name TEXT NOT NULL,count INTEGER NOT NULL,digit INTEGER NOT NULL)"
 			, NULL, NULL, &errMessage) != SQLITE_OK) {
 		printf("%s\n", errMessage);
 		sqlite3_free(errMessage);
